@@ -16,10 +16,6 @@ class _LocationScreenState extends State<LocationScreen> {
       TextStyle(color: Colors.black, fontWeight: FontWeight.bold);
   Completer<GoogleMapController> _controller = Completer();
 
-  static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
   final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
   Position _currentPosition;
   String _currentAddress;
@@ -88,13 +84,14 @@ class _LocationScreenState extends State<LocationScreen> {
                     style: textStyleH1,
                   ),
                   Expanded(
-                      child: ListView.builder(
+                      child: _currentAddress == null ?
+                      Center(child: CircularProgressIndicator(),) : ListView.builder(
                           itemCount: locationData.length,
                           itemBuilder: (BuildContext context, index) {
                             int indexRow = index + 1;
                             return ListTile(
                               leading: Text(indexRow.toString()),
-                              title: Text("Lat: " +
+                              title: Text(_currentAddress + "\nLat: " +
                                   locationData[index].lat +
                                   " Log: " +
                                   locationData[index].log),
@@ -117,6 +114,7 @@ class _LocationScreenState extends State<LocationScreen> {
         _currentPosition = position;
         locationData.add(LocationData(position.latitude.toString(), position
             .longitude.toString()));
+        _getAddressFromLatLng();
       });
     }).catchError((e) {
       print(e);
