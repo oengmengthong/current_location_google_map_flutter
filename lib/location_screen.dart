@@ -18,14 +18,12 @@ class _LocationScreenState extends State<LocationScreen> {
 
   final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
   Position _currentPosition;
-  String _currentAddress;
   Timer timer;
   bool loading = false;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _getCurrentLocation();
     timer =
         Timer.periodic(Duration(seconds: 10), (timer) => _getCurrentLocation());
   }
@@ -84,14 +82,14 @@ class _LocationScreenState extends State<LocationScreen> {
                     style: textStyleH1,
                   ),
                   Expanded(
-                      child: _currentAddress == null ?
-                      Center(child: CircularProgressIndicator(),) : ListView.builder(
+                      child:  ListView.builder(
                           itemCount: locationData.length,
                           itemBuilder: (BuildContext context, index) {
                             int indexRow = index + 1;
                             return ListTile(
                               leading: Text(indexRow.toString()),
-                              title: Text(_currentAddress + "\nLat: " +
+                              title: Text(locationData[index].adr + ""
+                                  "\nLat: " +
                                   locationData[index].lat +
                                   " Log: " +
                                   locationData[index].log),
@@ -112,16 +110,15 @@ class _LocationScreenState extends State<LocationScreen> {
         .then((Position position) {
       setState(() {
         _currentPosition = position;
-        locationData.add(LocationData(position.latitude.toString(), position
-            .longitude.toString()));
-        _getAddressFromLatLng();
+
+        _getAddressFromLatLng(position);
       });
     }).catchError((e) {
       print(e);
     });
   }
 
-  _getAddressFromLatLng() async {
+  _getAddressFromLatLng(position) async {
     try {
       List<Placemark> p = await geolocator.placemarkFromCoordinates(
           _currentPosition.latitude, _currentPosition.longitude);
@@ -129,8 +126,11 @@ class _LocationScreenState extends State<LocationScreen> {
       Placemark place = p[0];
 
       setState(() {
-        _currentAddress =
-            "${place.locality}, ${place.postalCode}, ${place.country}";
+        locationData.add(LocationData("${place.locality}, ${place
+            .postalCode}, ${place.country}",position.latitude.toString(), position
+            .longitude.toString()));
+        print(locationData);
+
       });
     } catch (e) {
       print(e);
@@ -138,8 +138,10 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 }
 
+
 class LocationData {
+  String adr;
   String lat;
   String log;
-  LocationData(this.lat, this.log);
+  LocationData(this.adr,this.lat, this.log);
 }
